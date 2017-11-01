@@ -8,12 +8,13 @@ We will try to cover all security problems and their solutions as much as we can
 
 * Registration
 * Activation by e-mail
-Resend verification email
-Password Encoding
-Resetting Password
+* Resend verification email
+* Password Encoding
+* Resetting Password
 
-Token based authentication
-Logout
-Roles
-Privileges
-Prevent Brute Force attempts
+* Token based authentication
+* Token expire
+* Logout - token inactivate
+* Roles
+* Privileges
+* Prevent Brute Force attempts
