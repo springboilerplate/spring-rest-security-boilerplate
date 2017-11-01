@@ -6,8 +6,8 @@ We will build Rest APIs by helping of Spring Security and Spring Boot. Every con
 
 We will try to cover all security problems and their solutions as much as we can do. 
 
-Registration
-Activation by e-mail
+* Registration
+* Activation by e-mail
 Resend verification email
 Password Encoding
 Resetting Password
