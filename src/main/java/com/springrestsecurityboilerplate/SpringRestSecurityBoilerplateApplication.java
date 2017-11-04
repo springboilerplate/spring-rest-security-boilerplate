@@ -22,10 +22,10 @@ public class SpringRestSecurityBoilerplateApplication implements CommandLineRunn
 	public void run(String... arg0) throws Exception {
 		// TODO Auto-generated method stub
 		
-		User user = new User();
-		user.setUsername("Destan");
-		user.setPassword("123456");
-		userRepository.save(user);
+//		User user = new User();
+//		user.setUsername("Destan");
+//		user.setPassword("123456");
+//		userRepository.save(user);
 		
 		
 		

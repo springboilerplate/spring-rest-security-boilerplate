@@ -1,10 +1,12 @@
 package com.springrestsecurityboilerplate.user;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
-import com.springrestsecurityboilerplate.validation.UserNameExistsException;
+import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -13,38 +15,35 @@ public class UserServiceImp implements UserService {
 	UserRepository userRepository;
 
 	@Override
-	public void registerUser(User user) throws EmailExistsException, UserNameExistsException {
-		if (emailExist(user.getEmail())) {
+	public void registerUser(User user) throws EmailExistsException, UsernameExistsException {
+		if (isEmailExist(user.getEmail())) {
 			// System.out.println("Existed email");
-			throw new EmailExistsException("There is an account with that email address:" + user.getEmail());
-		} else if (usernameExist(user.getUsername())) {
-			throw new UserNameExistsException("There is an account with that username:" + user.getUsername());
+			throw new EmailExistsException(user.getEmail());
+		} else if (isUsernameExist(user.getUsername())) {
+			throw new UsernameExistsException(user.getUsername());
 		}
 
 		else{
+			user.setCreationDate(new Date());
+			user.setIsActive(false);
+			user.setActivationDate(null);
 			userRepository.save(user);
 			System.out.println("Registered!");
 		}
 	}
 
-	private boolean emailExist(String email) {
+	private boolean isEmailExist(String email) {
 		User user = userRepository.findByEmail(email);
 
-		if (user != null) {
-			return true;
-		}
-
-		return false;
+		boolean isUserExistByEmail = user != null;
+		return isUserExistByEmail;
 	}
 
-	private boolean usernameExist(String username) {
+	private boolean isUsernameExist(String username) {
 		User user = userRepository.findByUsername(username);
 
-		if (user != null) {
-			return true;
-		}
-
-		return false;
+		boolean isUserExistByUsername = user != null;
+		return isUserExistByUsername;
 	}
 
 }

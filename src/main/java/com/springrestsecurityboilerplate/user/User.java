@@ -11,6 +11,11 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.springrestsecurityboilerplate.validation.ValidEmail;
+
 @Entity
 @Table(name="user")
 public class User {
@@ -25,6 +30,9 @@ public class User {
 	private String username;
 	@NotNull
 	private String password;
+	@ValidEmail //@Email
+	@NotEmpty
+	@NotNull
 	private String email;
 	private String address;
 	@Temporal(TemporalType.DATE)

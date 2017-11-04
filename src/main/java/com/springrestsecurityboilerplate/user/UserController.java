@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
-import com.springrestsecurityboilerplate.validation.UserNameExistsException;
+import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 @RestController
 public class UserController {
@@ -26,7 +26,7 @@ public class UserController {
 //			System.out.println(e);
 		}
 		
-		catch(UserNameExistsException e)
+		catch(UsernameExistsException e)
 		{
 			System.out.println(e.getMessage());
 		}
