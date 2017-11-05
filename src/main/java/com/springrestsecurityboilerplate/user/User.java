@@ -39,7 +39,7 @@ public class User {
 	private Date creationDate;
 	@Temporal(TemporalType.DATE)
 	private Date activationDate;
-	private Boolean isActive;
+	private boolean isActive;
 	public Long getId() {
 		return id;
 	}
