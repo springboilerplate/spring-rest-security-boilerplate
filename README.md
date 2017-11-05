@@ -14,7 +14,6 @@ We will try to cover all security problems and their solutions as much as we can
 
 * Token based authentication
 * Token expire
-* Logout - token inactivate
 * Roles
 * Privileges
 * Prevent Brute Force attempts
