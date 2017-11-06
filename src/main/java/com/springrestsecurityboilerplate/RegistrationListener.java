@@ -26,7 +26,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 	private UserService service;
 
 	@Autowired
-    private Environment env;
+	private Environment env;
 
 	@Override
 	public void onApplicationEvent(OnRegistrationCompleteEvent event) {
@@ -38,25 +38,27 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 		String token = UUID.randomUUID().toString();
 		service.createVerificationToken(user, token);
 
-	    final SimpleMailMessage email = constructEmailMessage(event, user, token);
-        mailSender.send(email);
-    }
+		final SimpleMailMessage email = constructEmailMessage(event, user, token);
+		System.out.println(email);
+		// mailSender.send(email);
+	}
 
-    //
+	//
 
-    private final SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event, final User user, final String token) {
-        final String recipientAddress = user.getEmail();
-        final String subject = "Registration Confirmation";
-        final String confirmationUrl = event.getAppUrl() + "/registrationConfirm.html?token=" + token;
-        //final String message = messages.getMessage("message.regSucc", null, event.getLocale());
-        final SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipientAddress);
-        email.setSubject(subject);
-//        email.setText(message + " \r\n" + confirmationUrl);
-        email.setText("Link is " + " \r\n" + confirmationUrl + "\r\n the token is "+ token);
-//        email.setText("Token is " + token); //just sending token
-        email.setFrom(env.getProperty("support.email"));
-        return email;
-    }
+	private final SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event, final User user,
+			final String token) {
+
+		final String recipientAddress = user.getEmail();
+		final String subject = "Registration Confirmation";
+		final String confirmationUrl = event.getAppUrl() + "/registrationConfirm.html?token=" + token;
+		// final String message = messages.getMessage("message.regSucc", null,
+		// event.getLocale());
+		final SimpleMailMessage email = new SimpleMailMessage();
+		email.setTo(recipientAddress);
+		email.setSubject(subject);
+		email.setText("Token is " + token); // just sending token
+		email.setFrom(env.getProperty("support.email"));
+		return email;
+	}
 
 }

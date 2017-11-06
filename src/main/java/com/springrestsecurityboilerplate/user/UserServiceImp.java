@@ -44,8 +44,7 @@ public class UserServiceImp implements UserService {
 			userRepository.save(user);
 			// eventPublisher.publishEvent(new
 			// OnRegistrationCompleteEvent(user));
-			// String appUrl = request.getContextPath();
-			String appUrl = "http://localhost:8082";
+			String appUrl = request.getContextPath();
 			eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, request.getLocale(), appUrl));
 			System.out.println("Registered!");
 		}
@@ -104,9 +103,15 @@ public class UserServiceImp implements UserService {
 				System.out.println("Expired token!");
 			} else {
 
-				user.setIsActive(true);
-				updateUser(user);
+				if (user.getIsActive() == true) {
+					System.out.println("This user is already active");
+				}
 
+				else {
+					user.setActivationDate(new Date());
+					user.setIsActive(true);
+					updateUser(user);
+				}
 			}
 
 		}
