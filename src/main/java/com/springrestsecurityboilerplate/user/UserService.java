@@ -19,4 +19,8 @@ public interface UserService {
 	VerificationToken getVerificationToken(String VerificationToken);
 
 	void verifyToken(String token);
+	
+	void resendTokenByEmail(String email);
+
+	void createResendVerificationToken(User user, String token);
 }

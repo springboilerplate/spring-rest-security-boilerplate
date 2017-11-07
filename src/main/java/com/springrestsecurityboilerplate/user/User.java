@@ -3,9 +3,11 @@ package com.springrestsecurityboilerplate.user;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -14,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.springrestsecurityboilerplate.VerificationToken;
 import com.springrestsecurityboilerplate.validation.ValidEmail;
 
 @Entity
@@ -39,7 +42,17 @@ public class User {
 	private Date creationDate;
 	@Temporal(TemporalType.DATE)
 	private Date activationDate;
-	private boolean isActive;
+	private Boolean isActive;
+	
+	@OneToOne(fetch=FetchType.EAGER)
+	private VerificationToken token;
+	
+	public VerificationToken getToken() {
+		return token;
+	}
+	public void setToken(VerificationToken token) {
+		this.token = token;
+	}
 	public Long getId() {
 		return id;
 	}
