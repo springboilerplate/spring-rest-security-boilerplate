@@ -115,9 +115,13 @@ public class UserServiceImp implements UserService {
 				}
 
 				else {
+
 					user.setActivationDate(new Date());
 					user.setIsActive(true);
+					user.setToken(null);
 					updateUser(user);
+					tokenRepository.delete(verificationToken);
+
 				}
 			}
 

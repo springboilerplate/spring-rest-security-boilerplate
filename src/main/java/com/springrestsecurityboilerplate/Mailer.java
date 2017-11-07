@@ -24,7 +24,7 @@ public class Mailer {
 	public void resendVerificationToken(User user, VerificationToken token) {
 
 		final SimpleMailMessage email = constructResendVerificationTokenEmail(user, token);
-		mailSender.send(email);
+//		mailSender.send(email);
 		System.out.println(email);
 
 	}
