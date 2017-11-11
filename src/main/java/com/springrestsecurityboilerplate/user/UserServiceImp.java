@@ -2,12 +2,15 @@ package com.springrestsecurityboilerplate.user;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
 
+import com.springrestsecurityboilerplate.Mailer;
 import com.springrestsecurityboilerplate.OnRegistrationCompleteEvent;
 import com.springrestsecurityboilerplate.VerificationToken;
 import com.springrestsecurityboilerplate.VerificationTokenRepository;
@@ -25,6 +28,9 @@ public class UserServiceImp implements UserService {
 
 	@Autowired
 	VerificationTokenRepository tokenRepository;
+
+	@Autowired
+	Mailer mailer;
 
 	@Override
 	public void registerUser(User user, WebRequest request) throws EmailExistsException, UsernameExistsException {
@@ -78,6 +84,7 @@ public class UserServiceImp implements UserService {
 	@Override
 	public void createVerificationToken(User user, String token) {
 		VerificationToken myToken = new VerificationToken(user, token);
+		user.setToken(myToken);
 		tokenRepository.save(myToken);
 	}
 
@@ -108,14 +115,42 @@ public class UserServiceImp implements UserService {
 				}
 
 				else {
+
 					user.setActivationDate(new Date());
 					user.setIsActive(true);
+					user.setToken(null);
 					updateUser(user);
+					tokenRepository.delete(verificationToken);
+
 				}
 			}
 
 		}
 
+	}
+
+	@Override
+	public void resendTokenByEmail(String email) {
+
+		User user = userRepository.findByEmail(email);
+
+		if (user != null && user.getIsActive() == false) {
+			String token = UUID.randomUUID().toString();
+			createResendVerificationToken(user, token);
+
+		} else {
+			System.out.println("There is no account with that e-mail or User is already active");
+		}
+
+	}
+
+	@Override
+	public void createResendVerificationToken(User user, String token) {
+
+		VerificationToken oldToken = user.getToken();
+		oldToken.updateToken(token);
+		tokenRepository.save(oldToken);
+		mailer.resendVerificationToken(user, oldToken);
 	}
 
 }

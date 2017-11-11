@@ -44,4 +44,10 @@ public class UserController {
 
 	}
 
+	@RequestMapping(value = "/resend/{email:.+}", method = RequestMethod.GET)
+	public void resendVerificationCode(@PathVariable("email") String email) {
+
+		userService.resendTokenByEmail(email);
+	}
+
 }
