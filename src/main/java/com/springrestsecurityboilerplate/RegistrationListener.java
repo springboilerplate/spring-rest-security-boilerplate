@@ -1,7 +1,12 @@
 package com.springrestsecurityboilerplate;
 
+import java.io.Serializable;
 import java.util.UUID;
 
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
@@ -14,7 +19,7 @@ import com.springrestsecurityboilerplate.user.User;
 import com.springrestsecurityboilerplate.user.UserService;
 
 @Component
-public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
+public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent>, Serializable {
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -28,6 +33,18 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 	@Autowired
 	private Environment env;
 
+	// @Autowired
+	// Mailer mailer;
+
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+
+	@Autowired
+	private RabbitTemplate template;
+
+	// @Autowired
+	// private DirectExchange direct;
+
 	@Override
 	public void onApplicationEvent(OnRegistrationCompleteEvent event) {
 		this.confirmRegistration(event);
@@ -38,28 +55,17 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 		String token = UUID.randomUUID().toString();
 		service.createVerificationToken(user, token);
 
-		final SimpleMailMessage email = constructEmailMessage(event, user, token);
-		System.out.println(email);
-		// mailSender.send(email);
+		RegistrationToken registrationToken = new RegistrationToken(event, user, token);
+		// amqpTemplate.convertAndSend("email-exchange", "registration-token",
+		// registrationToken);
+
+		template.convertAndSend("email-direct", "registration", registrationToken);
+		// amqpTemplate.convertAndSend("email-exchange", "registration-token",
+		// registrationToken);
+		// mailer.registrationTokenEmail(event,user,token);
+		System.out.println("after the template");
 	}
 
 	//
-
-	private final SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event, final User user,
-			final String token) {
-
-		final String recipientAddress = user.getEmail();
-		final String subject = "Registration Confirmation";
-		// final String confirmationUrl = event.getAppUrl() +
-		// "/registrationConfirm.html?token=" + token;
-		// final String message = messages.getMessage("message.regSucc", null,
-		// event.getLocale());
-		final SimpleMailMessage email = new SimpleMailMessage();
-		email.setTo(recipientAddress);
-		email.setSubject(subject);
-		email.setText("Token is " + token); // just sending token
-		email.setFrom(env.getProperty("support.email"));
-		return email;
-	}
 
 }

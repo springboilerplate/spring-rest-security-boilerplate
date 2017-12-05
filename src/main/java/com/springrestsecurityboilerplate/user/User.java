@@ -1,5 +1,6 @@
 package com.springrestsecurityboilerplate.user;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -21,7 +22,7 @@ import com.springrestsecurityboilerplate.validation.ValidEmail;
 
 @Entity
 @Table(name="user")
-public class User {
+public class User implements Serializable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

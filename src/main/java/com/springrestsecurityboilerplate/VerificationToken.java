@@ -1,5 +1,6 @@
 package com.springrestsecurityboilerplate;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -17,7 +18,7 @@ import javax.persistence.OneToOne;
 import com.springrestsecurityboilerplate.user.User;
 
 @Entity
-public class VerificationToken {
+public class VerificationToken implements Serializable {
 
 	private static final int EXPIRATION = 60 * 24;
 
