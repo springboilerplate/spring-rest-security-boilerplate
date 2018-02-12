@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.springrestsecurityboilerplate.Mailer;
 import com.springrestsecurityboilerplate.OnRegistrationCompleteEvent;
+import com.springrestsecurityboilerplate.ResendToken;
 import com.springrestsecurityboilerplate.VerificationToken;
 import com.springrestsecurityboilerplate.VerificationTokenRepository;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
@@ -29,8 +32,14 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	VerificationTokenRepository tokenRepository;
 
+	// @Autowired
+	// Mailer mailer;
+
 	@Autowired
-	Mailer mailer;
+	private AmqpTemplate amqpTemplate;
+
+	@Autowired
+	private RabbitTemplate template;
 
 	@Override
 	public void registerUser(User user, WebRequest request) throws EmailExistsException, UsernameExistsException {
@@ -150,7 +159,11 @@ public class UserServiceImp implements UserService {
 		VerificationToken oldToken = user.getToken();
 		oldToken.updateToken(token);
 		tokenRepository.save(oldToken);
-		mailer.resendVerificationToken(user, oldToken);
+		ResendToken resendToken = new ResendToken(user, oldToken);
+		// amqpTemplate.convertAndSend("email-exchange", "resend-token",
+		// resendToken);
+		template.convertAndSend("email-direct", "resend-token", resendToken);
+		// mailer.resendVerificationToken(user, oldToken);
 	}
 
 }

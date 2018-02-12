@@ -1,12 +1,13 @@
 package com.springrestsecurityboilerplate;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 import org.springframework.context.ApplicationEvent;
 
 import com.springrestsecurityboilerplate.user.User;
 
-public class OnRegistrationCompleteEvent extends ApplicationEvent {
+public class OnRegistrationCompleteEvent extends ApplicationEvent implements Serializable {
 
 	private String appUrl;
 	private Locale locale;
