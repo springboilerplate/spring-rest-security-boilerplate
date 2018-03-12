@@ -11,7 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.springrestsecurityboilerplate.user.User;
+import com.springrestsecurityboilerplate.user.AppUser;
 
 public class Mailer implements Serializable {
 
@@ -31,15 +31,15 @@ public class Mailer implements Serializable {
 			resendVerificationToken(resendToken.getUser(), resendToken.getOldToken());
 	}
 
-	public void resendVerificationToken(User user, VerificationToken token) {
+	public void resendVerificationToken(AppUser user, VerificationToken token) {
 
 		final SimpleMailMessage email = constructResendVerificationTokenEmail(user, token);
-//		mailSender.send(email);
+		// mailSender.send(email);
 		System.out.println(email);
 
 	}
 
-	private final SimpleMailMessage constructResendVerificationTokenEmail(final User user,
+	private final SimpleMailMessage constructResendVerificationTokenEmail(final AppUser user,
 			final VerificationToken newToken) {
 
 		SimpleMailMessage email = new SimpleMailMessage();
@@ -57,16 +57,16 @@ public class Mailer implements Serializable {
 		registrationTokenEmail(registrationToken.getEvent(), registrationToken.getUser(), registrationToken.getToken());
 	}
 
-	public void registrationTokenEmail(OnRegistrationCompleteEvent event, User user, String token) {
+	public void registrationTokenEmail(OnRegistrationCompleteEvent event, AppUser user, String token) {
 
 		final SimpleMailMessage email = constructRegistrationEmailMessage(event, user, token);
-//		mailSender.send(email);
+		// mailSender.send(email);
 		System.out.println(email);
 
 	}
 
 	private final SimpleMailMessage constructRegistrationEmailMessage(final OnRegistrationCompleteEvent event,
-			final User user, final String token) {
+			final AppUser user, final String token) {
 
 		final String recipientAddress = user.getEmail();
 		final String subject = "Registration Confirmation";

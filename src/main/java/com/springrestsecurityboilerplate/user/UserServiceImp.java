@@ -42,7 +42,7 @@ public class UserServiceImp implements UserService {
 	private RabbitTemplate template;
 
 	@Override
-	public void registerUser(User user, WebRequest request) throws EmailExistsException, UsernameExistsException {
+	public void registerUser(AppUser user, WebRequest request) throws EmailExistsException, UsernameExistsException {
 
 		if (isEmailExist(user.getEmail())) {
 			// System.out.println("Existed email");
@@ -66,22 +66,22 @@ public class UserServiceImp implements UserService {
 	}
 
 	private boolean isEmailExist(String email) {
-		User user = userRepository.findByEmail(email);
+		AppUser user = userRepository.findByEmail(email);
 
 		boolean isUserExistByEmail = user != null;
 		return isUserExistByEmail;
 	}
 
 	private boolean isUsernameExist(String username) {
-		User user = userRepository.findByUsername(username);
+		AppUser user = userRepository.findByUsername(username);
 
 		boolean isUserExistByUsername = user != null;
 		return isUserExistByUsername;
 	}
 
 	@Override
-	public User getUser(String verificationToken) {
-		User user = tokenRepository.findByToken(verificationToken).getUser();
+	public AppUser getUser(String verificationToken) {
+		AppUser user = tokenRepository.findByToken(verificationToken).getUser();
 		return user;
 	}
 
@@ -91,14 +91,14 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void createVerificationToken(User user, String token) {
+	public void createVerificationToken(AppUser user, String token) {
 		VerificationToken myToken = new VerificationToken(user, token);
 		user.setToken(myToken);
 		tokenRepository.save(myToken);
 	}
 
 	@Override
-	public void updateUser(User user) {
+	public void updateUser(AppUser user) {
 		userRepository.save(user);
 
 	}
@@ -113,7 +113,7 @@ public class UserServiceImp implements UserService {
 			System.out.println("invalid token");
 
 		} else {
-			User user = verificationToken.getUser();
+			AppUser user = verificationToken.getUser();
 			Calendar cal = Calendar.getInstance();
 			if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
 				System.out.println("Expired token!");
@@ -141,7 +141,7 @@ public class UserServiceImp implements UserService {
 	@Override
 	public void resendTokenByEmail(String email) {
 
-		User user = userRepository.findByEmail(email);
+		AppUser user = userRepository.findByEmail(email);
 
 		if (user != null && user.getIsActive() == false) {
 			String token = UUID.randomUUID().toString();
@@ -154,7 +154,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void createResendVerificationToken(User user, String token) {
+	public void createResendVerificationToken(AppUser user, String token) {
 
 		VerificationToken oldToken = user.getToken();
 		oldToken.updateToken(token);

@@ -15,7 +15,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.springrestsecurityboilerplate.user.User;
+import com.springrestsecurityboilerplate.user.AppUser;
 import com.springrestsecurityboilerplate.user.UserService;
 
 @Component
@@ -51,14 +51,15 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 	}
 
 	private void confirmRegistration(OnRegistrationCompleteEvent event) {
-		User user = event.getUser();
+		AppUser user = event.getUser();
 		String token = UUID.randomUUID().toString();
 		service.createVerificationToken(user, token);
 
 		RegistrationToken registrationToken = new RegistrationToken(event, user, token);
 		// amqpTemplate.convertAndSend("email-exchange", "registration-token",
 		// registrationToken);
-
+		System.out.println("Registration token is: " + token);
+		// Mail
 		template.convertAndSend("email-direct", "registration", registrationToken);
 		// amqpTemplate.convertAndSend("email-exchange", "registration-token",
 		// registrationToken);

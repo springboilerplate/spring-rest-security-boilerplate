@@ -22,7 +22,7 @@ import com.springrestsecurityboilerplate.validation.ValidEmail;
 
 @Entity
 @Table(name="user")
-public class User implements Serializable {
+public class AppUser implements Serializable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

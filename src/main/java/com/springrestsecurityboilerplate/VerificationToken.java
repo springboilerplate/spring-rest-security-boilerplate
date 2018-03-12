@@ -15,7 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-import com.springrestsecurityboilerplate.user.User;
+import com.springrestsecurityboilerplate.user.AppUser;
 
 @Entity
 public class VerificationToken implements Serializable {
@@ -28,9 +28,9 @@ public class VerificationToken implements Serializable {
 
 	private String token;
 
-	@OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, mappedBy = "token")
+	@OneToOne(targetEntity = AppUser.class, fetch = FetchType.EAGER, mappedBy = "token")
 	// @JoinColumn(nullable = false, name = "id")
-	private User user;
+	private AppUser user;
 
 	private Date expiryDate;
 
@@ -57,7 +57,7 @@ public class VerificationToken implements Serializable {
 		this.expiryDate = calculateExpiryDate(EXPIRATION);
 	}
 
-	public VerificationToken(final User user, final String token) {
+	public VerificationToken(final AppUser user, final String token) {
 		super();
 		this.user = user;
 		this.token = token;
@@ -80,11 +80,11 @@ public class VerificationToken implements Serializable {
 		this.token = token;
 	}
 
-	public User getUser() {
+	public AppUser getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(AppUser user) {
 		this.user = user;
 	}
 
