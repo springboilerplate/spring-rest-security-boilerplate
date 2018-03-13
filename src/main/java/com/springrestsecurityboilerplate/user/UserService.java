@@ -2,7 +2,7 @@ package com.springrestsecurityboilerplate.user;
 
 import org.springframework.web.context.request.WebRequest;
 
-import com.springrestsecurityboilerplate.VerificationToken;
+import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 

@@ -1,4 +1,4 @@
-package com.springrestsecurityboilerplate;
+package com.springrestsecurityboilerplate.registration;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

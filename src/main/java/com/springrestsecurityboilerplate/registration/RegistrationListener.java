@@ -1,4 +1,4 @@
-package com.springrestsecurityboilerplate;
+package com.springrestsecurityboilerplate.registration;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -64,7 +64,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 		// amqpTemplate.convertAndSend("email-exchange", "registration-token",
 		// registrationToken);
 		// mailer.registrationTokenEmail(event,user,token);
-		System.out.println("after the template");
+
 	}
 
 	//

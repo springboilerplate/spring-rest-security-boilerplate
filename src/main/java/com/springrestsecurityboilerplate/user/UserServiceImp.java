@@ -12,11 +12,11 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
 
-import com.springrestsecurityboilerplate.Mailer;
-import com.springrestsecurityboilerplate.OnRegistrationCompleteEvent;
-import com.springrestsecurityboilerplate.ResendToken;
-import com.springrestsecurityboilerplate.VerificationToken;
-import com.springrestsecurityboilerplate.VerificationTokenRepository;
+import com.springrestsecurityboilerplate.mail.Mailer;
+import com.springrestsecurityboilerplate.registration.OnRegistrationCompleteEvent;
+import com.springrestsecurityboilerplate.registration.ResendToken;
+import com.springrestsecurityboilerplate.registration.VerificationToken;
+import com.springrestsecurityboilerplate.registration.VerificationTokenRepository;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 

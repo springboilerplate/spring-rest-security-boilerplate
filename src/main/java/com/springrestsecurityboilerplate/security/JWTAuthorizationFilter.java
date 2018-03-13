@@ -36,7 +36,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
 		String header = req.getHeader(HEADER_STRING);
-		System.out.println("doFilterInternal");
 		if (header == null || !header.startsWith(TOKEN_PREFIX)) {
 			System.out.println("if (header == null || !header.startsWith(TOKEN_PREFIX))");
 			chain.doFilter(req, res);
@@ -65,10 +64,10 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		}
 		System.out.println("AUTH foundUsername= " + foundUsername);
 		if (foundUsername.equals(username)) {
-			System.out.println("DB de kayıt var (JWTAuthorizationFilter) ");
+			System.out.println("DB contains this user  (JWTAuthorizationFilter) ");
 
 		} else
-			System.out.println("DB de kayıt yok (JWTAuthorizationFilter) ");
+			System.out.println("DB does not contain this user (JWTAuthorizationFilter) ");
 	}
 
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {

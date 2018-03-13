@@ -25,6 +25,10 @@ public class SpringRestSecurityBoilerplateApplication implements CommandLineRunn
 	@Autowired
 	UserRepository userRepository;
 
+	// True for sending mail with a real e-mail address which should be configured
+	// in the application properties , false for not sending
+	public static final boolean SEND_MAIL = false;
+
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();

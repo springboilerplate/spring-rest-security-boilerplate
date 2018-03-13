@@ -1,4 +1,4 @@
-package com.springrestsecurityboilerplate;
+package com.springrestsecurityboilerplate.registration;
 
 import java.io.Serializable;
 import java.util.Locale;

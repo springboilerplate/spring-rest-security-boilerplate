@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import com.springrestsecurityboilerplate.VerificationToken;
+import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
@@ -58,6 +58,13 @@ public class UserController {
 
 		userService.resendTokenByEmail(email);
 	}
+	
+	@RequestMapping(value = "/test", method = RequestMethod.GET)
+	public void testFunction() {
+
+		System.out.println("Test function is executed");
+
+	}
 
 	@RequestMapping(value = "/currentuser", method = RequestMethod.GET)
 	public void test() {
@@ -90,10 +97,10 @@ public class UserController {
 		}
 
 		if (foundUsername.equals(currentPrincipalName)) {
-			System.out.println("DB de kayıt var (currentuser2) ");
+			System.out.println("DB contains this user (currentuser2) ");
 
 		} else
-			System.out.println("DB de kayıt yok (currentuser2) ");
+			System.out.println("DB does not contain this user (currentuser2) ");
 
 	}
 
