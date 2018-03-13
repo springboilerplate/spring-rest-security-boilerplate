@@ -1,4 +1,4 @@
-package com.springrestsecurityboilerplate;
+package com.springrestsecurityboilerplate.mail;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;

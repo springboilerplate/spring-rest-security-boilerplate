@@ -2,19 +2,19 @@ package com.springrestsecurityboilerplate.user;
 
 import org.springframework.web.context.request.WebRequest;
 
-import com.springrestsecurityboilerplate.VerificationToken;
+import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 public interface UserService {
 
-	void registerUser(User user, WebRequest request) throws EmailExistsException, UsernameExistsException;
+	void registerUser(AppUser user, WebRequest request) throws EmailExistsException, UsernameExistsException;
 
-	User getUser(String verificationToken);
+	AppUser getUser(String verificationToken);
 
-	void updateUser(User user);
+	void updateUser(AppUser user);
 
-	void createVerificationToken(User user, String token);
+	void createVerificationToken(AppUser user, String token);
 
 	VerificationToken getVerificationToken(String VerificationToken);
 
@@ -22,5 +22,5 @@ public interface UserService {
 	
 	void resendTokenByEmail(String email);
 
-	void createResendVerificationToken(User user, String token);
+	void createResendVerificationToken(AppUser user, String token);
 }
