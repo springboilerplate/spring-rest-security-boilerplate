@@ -33,6 +33,7 @@ public class UserController {
 	public void saveUser(@RequestBody AppUser user, WebRequest request) {
 
 		try {
+			
 			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 			userService.registerUser(user, request);
 		} catch (EmailExistsException e) {
@@ -61,7 +62,7 @@ public class UserController {
 	
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	public void testFunction() {
-
+		userService.testHello();
 		System.out.println("Test function is executed");
 
 	}

@@ -65,14 +65,14 @@ public class UserServiceImp implements UserService {
 		}
 	}
 
-	private boolean isEmailExist(String email) {
+	public boolean isEmailExist(String email) {
 		AppUser user = userRepository.findByEmail(email);
 
 		boolean isUserExistByEmail = user != null;
 		return isUserExistByEmail;
 	}
 
-	private boolean isUsernameExist(String username) {
+	public boolean isUsernameExist(String username) {
 		AppUser user = userRepository.findByUsername(username);
 
 		boolean isUserExistByUsername = user != null;
@@ -164,6 +164,12 @@ public class UserServiceImp implements UserService {
 		// resendToken);
 		template.convertAndSend("email-direct", "resend-token", resendToken);
 		// mailer.resendVerificationToken(user, oldToken);
+	}
+
+	@Override
+	public void testHello() {
+		// TODO Auto-generated method stub
+		System.out.println("UserSErviceImp Test");
 	}
 
 }
