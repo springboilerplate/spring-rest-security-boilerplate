@@ -86,7 +86,7 @@ public class Tests {
 	@Given("^configurations /config$")
 	public void configg() throws Throwable {
 
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).addFilter(springSecurityFilterChain).build();
+		mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).addFilter(springSecurityFilterChain).build();
 		JacksonTester.initFields(this, objectMapper);
 		System.out.println("setup executed");
 

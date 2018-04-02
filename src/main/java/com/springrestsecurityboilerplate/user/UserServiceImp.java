@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
 
@@ -32,11 +33,11 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	VerificationTokenRepository tokenRepository;
 
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
+
 	// @Autowired
 	// Mailer mailer;
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
 
 	@Autowired
 	private RabbitTemplate template;
@@ -44,14 +45,15 @@ public class UserServiceImp implements UserService {
 	@Override
 	public void registerUser(AppUser user, WebRequest request) throws EmailExistsException, UsernameExistsException {
 
-		if (isEmailExist(user.getEmail())) {
+		if (doesEmailExist(user.getEmail())) {
 			// System.out.println("Existed email");
 			throw new EmailExistsException(user.getEmail());
-		} else if (isUsernameExist(user.getUsername())) {
+		} else if (doesUsernameExist(user.getUsername())) {
 			throw new UsernameExistsException(user.getUsername());
 		}
 
 		else {
+			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 			user.setCreationDate(new Date());
 			user.setIsActive(false);
 			user.setActivationDate(null);
@@ -65,18 +67,18 @@ public class UserServiceImp implements UserService {
 		}
 	}
 
-	public boolean isEmailExist(String email) {
+	public boolean doesEmailExist(String email) {
 		AppUser user = userRepository.findByEmail(email);
 
-		boolean isUserExistByEmail = user != null;
-		return isUserExistByEmail;
+		boolean doesUserExistByEmail = user != null;
+		return doesUserExistByEmail;
 	}
 
-	public boolean isUsernameExist(String username) {
+	public boolean doesUsernameExist(String username) {
 		AppUser user = userRepository.findByUsername(username);
 
-		boolean isUserExistByUsername = user != null;
-		return isUserExistByUsername;
+		boolean doesUserExistByUsername = user != null;
+		return doesUserExistByUsername;
 	}
 
 	@Override
@@ -164,12 +166,6 @@ public class UserServiceImp implements UserService {
 		// resendToken);
 		template.convertAndSend("email-direct", "resend-token", resendToken);
 		// mailer.resendVerificationToken(user, oldToken);
-	}
-
-	@Override
-	public void testHello() {
-		// TODO Auto-generated method stub
-		System.out.println("UserSErviceImp Test");
 	}
 
 }
