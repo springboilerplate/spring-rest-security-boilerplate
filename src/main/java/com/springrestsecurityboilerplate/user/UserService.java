@@ -23,4 +23,8 @@ public interface UserService {
 	void resendTokenByEmail(String email);
 
 	void createResendVerificationToken(AppUser user, String token);
+	
+	boolean doesEmailExist(String email);
+	
+	public boolean doesUsernameExist(String username);
 }
