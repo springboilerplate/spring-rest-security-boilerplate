@@ -1,12 +1,20 @@
 package com.springrestsecurityboilerplate.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.springrestsecurityboilerplate.role.RoleService;
 
 import com.springrestsecurityboilerplate.user.AppUser;
 import com.springrestsecurityboilerplate.user.UserRepository;
@@ -22,14 +30,22 @@ import static com.springrestsecurityboilerplate.security.SecurityConstants.TOKEN
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-	@Autowired
 	private UserRepository userRepository;
 
-	public JWTAuthorizationFilter(AuthenticationManager authManager) {
+	private RoleService roleService;
+
+	public JWTAuthorizationFilter(AuthenticationManager authManager, UserRepository userRepository,
+			RoleService roleService) {
+
 		super(authManager);
+		this.userRepository = userRepository;
+		this.roleService = roleService;
+
 	}
 
 	@Override
@@ -45,7 +61,17 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		// Authentication authenticationn =
+		// SecurityContextHolder.getContext().getAuthentication();
+		// String currentPrincipalName = authenticationn.getName();
+		// System.out.println(currentPrincipalName);
+
+		// UserDetails userDetails =
+		// this.userDetailsService.loadUserByUsername(currentPrincipalName);
+
 		chain.doFilter(req, res);
+
 	}
 
 	private void checkUser(String username) {
@@ -73,17 +99,32 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
 		String token = request.getHeader(HEADER_STRING);
 		if (token != null) {
-			// parse the token.
-			String user = Jwts.parser().setSigningKey(SECRET.getBytes()).parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
-					.getBody().getSubject();
 
-			// checkUser(user);
+			Claims claims = Jwts.parser().setSigningKey(SECRET.getBytes())
+					.parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody();
 
-			if (user != null) {
-				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+			String user = claims.getSubject();
+
+			// AppUser usr = (AppUser) userDetailsService.loadUserByUsername(user);
+			// String role = claims.get("roles", String.class);
+			// Collection<GrantedAuthority> authorityList =
+			// AuthorityUtils.commaSeparatedStringToAuthorityList(role);
+			try {
+			AppUser currentUser = userRepository.findByUsername(user);
+
+			Collection<GrantedAuthority> authorityList = new ArrayList<GrantedAuthority>();
+				authorityList = (Collection<GrantedAuthority>) roleService.getAuthorities(currentUser.getRoles());
+
+				if (currentUser != null) {
+					return new UsernamePasswordAuthenticationToken(user, null, authorityList);
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
+
 			return null;
 		}
 		return null;
 	}
+
 }

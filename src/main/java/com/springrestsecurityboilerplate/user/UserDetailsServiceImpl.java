@@ -1,21 +1,34 @@
 package com.springrestsecurityboilerplate.user;
 
-
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.springrestsecurityboilerplate.role.RoleService;
 
 import static java.util.Collections.emptyList;
 
-@Service
-public class UserDetailsServiceImpl implements UserDetailsService {
-	private UserRepository applicationUserRepository;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-	public UserDetailsServiceImpl(UserRepository applicationUserRepository) {
+@Service
+// @Transactional
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+	private UserRepository applicationUserRepository;
+	private RoleService roleService;
+
+	public UserDetailsServiceImpl(UserRepository applicationUserRepository, RoleService roleService) {
 		this.applicationUserRepository = applicationUserRepository;
+		this.roleService = roleService;
 	}
 
 	@Override
@@ -24,10 +37,33 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		if (applicationUser == null) {
 			throw new UsernameNotFoundException(username);
 		}
-		//System.out.println(applicationUser.getPassword());
-		return new User(applicationUser.getUsername(), applicationUser.getPassword(), emptyList());
+
+		// //Enum
+		// List<GrantedAuthority> authorityList =
+		// AuthorityUtils.commaSeparatedStringToAuthorityList(applicationUser.getRoles());
+		// return new User(applicationUser.getUsername(), applicationUser.getPassword(),
+		// authorityList);
+
+		//
+		// List<GrantedAuthority> authorityList =
+		// AuthorityUtils.createAuthorityList(applicationUser.getRole().toString());
+		// return new User(applicationUser.getUsername(), applicationUser.getPassword(),
+		// authorityList);
+
+		// List<GrantedAuthority> authorityList =
+		// AuthorityUtils.commaSeparatedStringToAuthorityList(applicationUser.getRoles().toString());
+		// return new User(applicationUser.getUsername(), applicationUser.getPassword(),
+		// authorityList);
+
+		// Collection<GrantedAuthority> authorityList = (applicationUser.getRoles());
+
+		Collection<GrantedAuthority> authorityList = new ArrayList<GrantedAuthority>();
+
+		authorityList = (Collection<GrantedAuthority>) roleService.getAuthorities(applicationUser.getRoles());
+
+		return new User(applicationUser.getUsername(), applicationUser.getPassword(), true, true, true, true,
+				authorityList);
+
 	}
 
-	
 }
-

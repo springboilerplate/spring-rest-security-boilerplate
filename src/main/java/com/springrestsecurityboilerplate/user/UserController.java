@@ -1,6 +1,7 @@
 package com.springrestsecurityboilerplate.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,8 +51,10 @@ public class UserController {
 
 		userService.resendTokenByEmail(email);
 	}
-
+	
+	
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
+	@PreAuthorize("hasAuthority('READ_PRIVILEGE')")
 	public void testFunction() {
 
 		System.out.println("Test function is executed");

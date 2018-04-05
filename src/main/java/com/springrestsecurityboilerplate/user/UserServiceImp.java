@@ -1,5 +1,6 @@
 package com.springrestsecurityboilerplate.user;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import com.springrestsecurityboilerplate.registration.OnRegistrationCompleteEven
 import com.springrestsecurityboilerplate.registration.ResendToken;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.registration.VerificationTokenRepository;
+import com.springrestsecurityboilerplate.role.RoleRepository;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
@@ -35,6 +37,12 @@ public class UserServiceImp implements UserService {
 
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	
+	@Autowired
+	RoleRepository roleRepository;
+
+//	@Autowired
+//	Rolev2Repository roleRepository;
 
 	// @Autowired
 	// Mailer mailer;
@@ -57,7 +65,10 @@ public class UserServiceImp implements UserService {
 			user.setCreationDate(new Date());
 			user.setIsActive(false);
 			user.setActivationDate(null);
-
+			// user.setRoles(RolesEnum.ROLE_USER.name());
+			//user.setRoles(roleRepository.findByRoleName("User"));
+			user.setRoles(Arrays.asList(roleRepository.findByName("USER_ROLE"),roleRepository.findByName("ADMIN_ROLE")));
+//			user.setRoles(Arrays.asList(roleRepository.findByName("ADMIN_ROLE")));
 			userRepository.save(user);
 			// eventPublisher.publishEvent(new
 			// OnRegistrationCompleteEvent(user));
