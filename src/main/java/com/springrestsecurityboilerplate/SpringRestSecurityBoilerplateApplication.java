@@ -1,6 +1,5 @@
 package com.springrestsecurityboilerplate;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,6 +15,9 @@ public class SpringRestSecurityBoilerplateApplication implements CommandLineRunn
 
 	@Autowired
 	UserRepository userRepository;
+
+	// @Autowired
+	// Rolev2Repository roleRepository;
 
 	// True for sending mail with a real e-mail address which should be configured
 	// in the application properties , false for not sending
@@ -33,11 +35,6 @@ public class SpringRestSecurityBoilerplateApplication implements CommandLineRunn
 	@Override
 	public void run(String... arg0) throws Exception {
 		// TODO Auto-generated method stub
-
-		// User user = new User();
-		// user.setUsername("Destan");
-		// user.setPassword("123456");
-		// userRepository.save(user);
 
 	}
 }
