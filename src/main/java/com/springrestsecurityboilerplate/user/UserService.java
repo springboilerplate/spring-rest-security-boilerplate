@@ -2,6 +2,7 @@ package com.springrestsecurityboilerplate.user;
 
 import org.springframework.web.context.request.WebRequest;
 
+import com.springrestsecurityboilerplate.password.PasswordChange;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
@@ -19,12 +20,18 @@ public interface UserService {
 	VerificationToken getVerificationToken(String VerificationToken);
 
 	void verifyToken(String token);
-	
+
 	void resendTokenByEmail(String email);
 
 	void createResendVerificationToken(AppUser user, String token);
-	
+
 	boolean doesEmailExist(String email);
-	
+
 	public boolean doesUsernameExist(String username);
+
+	void resetPasswordByEmail(String email);
+
+	void createResetPasswordToken(AppUser user, String token);
+
+	void verifyResetPasswordToken(String token, PasswordChange pswChange);
 }

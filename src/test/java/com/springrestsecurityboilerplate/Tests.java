@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springrestsecurityboilerplate.password.PasswordChange;
 import com.springrestsecurityboilerplate.user.AppUser;
 import com.springrestsecurityboilerplate.user.UserRepository;
 import com.springrestsecurityboilerplate.user.UserService;
@@ -58,6 +59,8 @@ public class Tests {
 
 	private static JacksonTester<AppUser> jsonTester;
 
+	private static JacksonTester<PasswordChange> jsonTesterPswChange;
+
 	AppUser user = new AppUser();
 
 	AppUser loginUser = new AppUser();
@@ -65,6 +68,8 @@ public class Tests {
 	AppUser tempUser;
 
 	static String bearerToken;
+
+	static String resetPasswordToken;
 
 	String lastToken;
 
@@ -185,6 +190,34 @@ public class Tests {
 
 		// Assert.notNull(tempUser, "should not be null");
 		// assertEquals(tempUser.getIsActive(), true);
+
+	}
+
+	@When("^Reset password by email \"([^\"]*)\"$")
+	public void resetPasswordByEmail(String email) throws Throwable {
+
+		MvcResult mvcResult;
+
+		tempUser = new AppUser();
+		mvcResult = mockMvc.perform(get("/resetpassword/{email}", email)).andExpect(status().isOk()).andReturn();
+		tempUser = userRepository.findByEmail(email);
+		resetPasswordToken = tempUser.getPasswordResetToken().getToken();
+		System.out.println("Test Reset PasswordToken = " + resetPasswordToken);
+	}
+
+	@Then("^Reset password parameters with \"([^\"]*)\" AND \"([^\"]*)\"$")
+	public void resetPassword(String password1, String password2) throws Throwable {
+		MvcResult mvcResult;
+		PasswordChange pswChange = new PasswordChange();
+		pswChange.setPasswordOne(password1);
+		pswChange.setPasswordTwo(password2);
+
+		final String passwordChangeDTOJson = jsonTesterPswChange.write(pswChange).getJson();
+
+		mvcResult = mockMvc.perform(post("/resetpasswordform/{token}", resetPasswordToken)
+				.content(passwordChangeDTOJson).contentType(APPLICATION_JSON_UTF8)).andExpect(status().isOk()).
+
+				andDo(MockMvcResultHandlers.print()).andReturn();
 
 	}
 

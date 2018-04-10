@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+
+import com.springrestsecurityboilerplate.password.PasswordChange;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
@@ -50,6 +52,22 @@ public class UserController {
 	public void resendVerificationCode(@PathVariable("email") String email) {
 
 		userService.resendTokenByEmail(email);
+	}
+	
+	
+	@RequestMapping(value = "/resetpassword/{email:.+}", method = RequestMethod.GET)
+	public void resetPassword(@PathVariable("email") String email) {
+
+		userService.resetPasswordByEmail(email);
+	}
+	
+	
+	@RequestMapping(value = "/resetpasswordform/{token}", method = RequestMethod.POST)
+	public void resetPasswordForm(@RequestBody PasswordChange pswChange, @PathVariable("token") String token) {
+		
+		System.out.println(pswChange.getPasswordOne());
+		
+		userService.verifyResetPasswordToken(token,pswChange);
 	}
 	
 	

@@ -25,6 +25,11 @@ public class RabbitMQConfiguration {
 		public Queue resendTokenMailQueue() {
 			return new Queue("resendTokenMailQueue");
 		}
+		
+		@Bean
+		public Queue resetPasswordTokenMailQueue() {
+			return new Queue("resetPasswordTokenMailQueue");
+		}
 
 		@Bean
 		public Binding bindingRegistrationToken(DirectExchange direct, Queue registrationTokenMailQueue) {
@@ -34,6 +39,11 @@ public class RabbitMQConfiguration {
 		@Bean
 		public Binding bindingResendToken(DirectExchange direct, Queue resendTokenMailQueue) {
 			return BindingBuilder.bind(resendTokenMailQueue).to(direct).with("resend-token");
+		}
+		
+		@Bean
+		public Binding bindingResetPasswordToken(DirectExchange direct, Queue resetPasswordTokenMailQueue) {
+			return BindingBuilder.bind(resetPasswordTokenMailQueue).to(direct).with("reset-password");
 		}
 
 		@Bean
