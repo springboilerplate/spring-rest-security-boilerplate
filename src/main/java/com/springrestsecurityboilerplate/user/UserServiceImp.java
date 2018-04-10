@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
 
 import com.springrestsecurityboilerplate.mail.Mailer;
+import com.springrestsecurityboilerplate.password.PasswordChange;
+import com.springrestsecurityboilerplate.password.PasswordResetToken;
+import com.springrestsecurityboilerplate.password.PasswordResetTokenRepository;
 import com.springrestsecurityboilerplate.registration.OnRegistrationCompleteEvent;
 import com.springrestsecurityboilerplate.registration.ResendToken;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
@@ -37,12 +40,15 @@ public class UserServiceImp implements UserService {
 
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
-	
+
 	@Autowired
 	RoleRepository roleRepository;
 
-//	@Autowired
-//	Rolev2Repository roleRepository;
+	@Autowired
+	PasswordResetTokenRepository passwordResetTokenRepository;
+
+	// @Autowired
+	// Rolev2Repository roleRepository;
 
 	// @Autowired
 	// Mailer mailer;
@@ -66,9 +72,10 @@ public class UserServiceImp implements UserService {
 			user.setIsActive(false);
 			user.setActivationDate(null);
 			// user.setRoles(RolesEnum.ROLE_USER.name());
-			//user.setRoles(roleRepository.findByRoleName("User"));
-			user.setRoles(Arrays.asList(roleRepository.findByName("USER_ROLE"),roleRepository.findByName("ADMIN_ROLE")));
-//			user.setRoles(Arrays.asList(roleRepository.findByName("ADMIN_ROLE")));
+			// user.setRoles(roleRepository.findByRoleName("User"));
+			user.setRoles(
+					Arrays.asList(roleRepository.findByName("USER_ROLE"), roleRepository.findByName("ADMIN_ROLE")));
+			// user.setRoles(Arrays.asList(roleRepository.findByName("ADMIN_ROLE")));
 			userRepository.save(user);
 			// eventPublisher.publishEvent(new
 			// OnRegistrationCompleteEvent(user));
@@ -179,4 +186,80 @@ public class UserServiceImp implements UserService {
 		// mailer.resendVerificationToken(user, oldToken);
 	}
 
+	@Override
+	public void resetPasswordByEmail(String email) {
+
+		AppUser user = userRepository.findByEmail(email);
+
+		if (user != null) {
+			String token = UUID.randomUUID().toString();
+			createResetPasswordToken(user, token);
+
+		} else {
+			System.out.println("There is no account with that e-mail");
+		}
+
+	}
+
+	@Override
+	public void createResetPasswordToken(AppUser user, String token) {
+
+		PasswordResetToken whetherResetToken = user.getPasswordResetToken();
+
+		if (whetherResetToken == null) {
+
+			PasswordResetToken passwordResetToken = new PasswordResetToken(token, user);
+			user.setPasswordResetToken(passwordResetToken);
+			passwordResetTokenRepository.save(passwordResetToken);
+			System.out.println("Reset password token is " + token);
+			// userRepository.save(user);
+
+			// user.setPasswordResetToken(null);
+			// passwordResetTokenRepository.delete(passwordResetToken);
+
+			template.convertAndSend("email-direct", "reset-password", passwordResetToken);
+		}
+
+		else {
+			whetherResetToken.updateToken(token);
+			// user.setPasswordResetToken(whetherResetToken);
+			passwordResetTokenRepository.save(whetherResetToken);
+			System.out.println("Reset password token is " + token);
+			template.convertAndSend("email-direct", "reset-password", whetherResetToken);
+		}
+	}
+
+	public void verifyResetPasswordToken(String token, PasswordChange pswChange) {
+
+		PasswordResetToken pswToken = passwordResetTokenRepository.findByPasswordResetToken(token);
+		if (token == null || pswToken == null) {
+			System.out.println("invalid reset token");
+		}
+
+		else {
+
+			AppUser user = pswToken.getUser();
+			Calendar cal = Calendar.getInstance();
+
+			if ((pswToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+				System.out.println("Expired token!");
+			}
+
+			else {
+
+				if (pswChange.getPasswordOne().equals(pswChange.getPasswordTwo())) {
+
+					// user.setPassword(pswChange.getPasswordOne());
+					user.setPassword(bCryptPasswordEncoder.encode(pswChange.getPasswordOne()));
+					user.setPasswordResetToken(null);
+					passwordResetTokenRepository.delete(pswToken);
+					userRepository.save(user);
+
+				} else
+					System.out.println("passwords do not match");
+
+			}
+		}
+
+	}
 }

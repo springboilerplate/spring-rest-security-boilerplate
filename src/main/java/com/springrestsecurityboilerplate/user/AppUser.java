@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.springrestsecurityboilerplate.password.PasswordResetToken;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.role.Role;
 import com.springrestsecurityboilerplate.validation.ValidEmail;
@@ -57,11 +58,15 @@ public class AppUser implements Serializable {
 	@OneToOne(fetch = FetchType.EAGER)
 	private VerificationToken token;
 
+	@OneToOne(targetEntity = PasswordResetToken.class, fetch = FetchType.EAGER)
+//	@JoinColumn(nullable = false, name = "appusder_id")
+	private PasswordResetToken passwordResetToken;
+
 	// @OneToOne(fetch = FetchType.EAGER)
 	// private Rolev2 role;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-//	@LazyCollection(LazyCollectionOption.FALSE)
+	// @LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "appuser_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
 	private Collection<Role> roles;
 
@@ -175,6 +180,14 @@ public class AppUser implements Serializable {
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
+	}
+
+	public PasswordResetToken getPasswordResetToken() {
+		return passwordResetToken;
+	}
+
+	public void setPasswordResetToken(PasswordResetToken passwordResetToken) {
+		this.passwordResetToken = passwordResetToken;
 	}
 	// public String getRoles() {
 	// return roles;

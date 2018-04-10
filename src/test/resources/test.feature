@@ -18,9 +18,13 @@ Feature: Register, Token, Confirmation, Login and Accessing Tests
   	And Make sure that user is not null
   	Then Make sure that user is active "volkandogan.d@gmail.com"
   	
+  Scenario: Reset password by email 
+  	When Reset password by email "volkandogan.d@gmail.com"
+  	Then Reset password parameters with "654321" AND "654321"
+  	
   Scenario: Login Test
   	When Login with bad creds username and password are "volkan" AND "123"
-  	When Successful login username and password are "volkan" AND "123456"
+  	When Successful login username and password are "volkan" AND "654321"
  
   Scenario: Access Test
 	Then Access with token /test

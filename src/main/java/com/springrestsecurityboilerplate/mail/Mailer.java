@@ -11,6 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.springrestsecurityboilerplate.password.PasswordResetToken;
 import com.springrestsecurityboilerplate.registration.OnRegistrationCompleteEvent;
 import com.springrestsecurityboilerplate.registration.RegistrationToken;
 import com.springrestsecurityboilerplate.registration.ResendToken;
@@ -30,10 +31,9 @@ public class Mailer implements Serializable {
 	@Autowired
 	private Environment env;
 
-	
 	@RabbitListener(queues = "#{resendTokenMailQueue.name}")
 	public void onResendVerificationToken(ResendToken resendToken) {
-		//System.out.println("onResendVerificationToken is executed");
+		// System.out.println("onResendVerificationToken is executed");
 		if (resendToken != null)
 			resendVerificationToken(resendToken.getUser(), resendToken.getOldToken());
 	}
@@ -41,10 +41,10 @@ public class Mailer implements Serializable {
 	public void resendVerificationToken(AppUser user, VerificationToken token) {
 
 		final SimpleMailMessage email = constructResendVerificationTokenEmail(user, token);
-		System.out.println("New token is : "+ token.getToken());
-		if(SEND_MAIL==true)
-		mailSender.send(email);
-		
+		System.out.println("New token is : " + token.getToken());
+		if (SEND_MAIL == true)
+			mailSender.send(email);
+
 		System.out.println(email);
 
 	}
@@ -63,17 +63,17 @@ public class Mailer implements Serializable {
 
 	@RabbitListener(queues = "#{registrationTokenMailQueue.name}")
 	public void onRegistrationToken(RegistrationToken registrationToken) throws InterruptedException {
-		//System.out.println("onRegistrationToken is executed");
+		// System.out.println("onRegistrationToken is executed");
 		registrationTokenEmail(registrationToken.getEvent(), registrationToken.getUser(), registrationToken.getToken());
 	}
 
 	public void registrationTokenEmail(OnRegistrationCompleteEvent event, AppUser user, String token) {
 
 		final SimpleMailMessage email = constructRegistrationEmailMessage(event, user, token);
-		
-		if(SEND_MAIL==true)
-		mailSender.send(email);
-		
+
+		if (SEND_MAIL == true)
+			mailSender.send(email);
+
 		System.out.println(email);
 
 	}
@@ -93,6 +93,32 @@ public class Mailer implements Serializable {
 		email.setText("Token is " + token); // just sending token
 		email.setFrom(env.getProperty("support.email"));
 		return email;
+	}
+
+	@RabbitListener(queues = "#{resetPasswordTokenMailQueue.name}")
+	public void onResetPasswordToken(PasswordResetToken passwordResetToken) throws InterruptedException {
+		// System.out.println("onRegistrationToken is executed");
+		resetPasswordTokenEmail(passwordResetToken.getUser(), passwordResetToken.getToken());
+	}
+
+	public void resetPasswordTokenEmail(AppUser user, String resetPasswordToken) {
+
+		final SimpleMailMessage email = constructResetTokenEmail(user, resetPasswordToken);
+
+		if (SEND_MAIL == true)
+			mailSender.send(email);
+
+	}
+
+	private final SimpleMailMessage constructResetTokenEmail(final AppUser user, final String passwordToken) {
+
+		SimpleMailMessage email = new SimpleMailMessage();
+		email.setTo(user.getEmail());
+		email.setSubject("Reset Password Token");
+		email.setText("New token is " + passwordToken);
+		email.setFrom(env.getProperty("support.email"));
+		return email;
+
 	}
 
 }
