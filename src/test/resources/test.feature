@@ -4,7 +4,13 @@ Feature: Register, Token, Confirmation, Login and Accessing Tests
   	Given configurations /config 
   	When username password and email are "volkan" AND "123456" AND "volkandogan.d@gmail.com"
   	Then visitor calls /register
-
+  	When attempt to register with registered email but different username "volkan2" AND "123456" AND "volkandogan.d@gmail.com"
+  	And make sure that there is already an account with that email "volkandogan.d@gmail.com"
+	Then make sure register is failure with HTTP Response Conflict and there is no user with different username "volkan2"
+  	When attempt to register with registered username "volkan" AND "123456" AND "volkandogan.dd@gmail.com"
+	And make sure that there is already an account with that username "volkan"
+	Then make sure register is failure with HTTP Response Conflict and there is no user with different email "volkandogan.dd@gmail.com"
+	
   Scenario: Testing Resend Token and Confirmation
   	When Resend Token with unregistered user "unregistered@unregistered.com"
   	Then Make sure that user is null

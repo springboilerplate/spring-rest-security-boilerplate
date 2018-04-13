@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.springrestsecurityboilerplate.role.RoleService;
+import com.springrestsecurityboilerplate.security.LoginAttemptService;
 
 import static java.util.Collections.emptyList;
 
@@ -19,9 +20,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Service
 // @Transactional
 public class UserDetailsServiceImpl implements UserDetailsService {
+
+	@Autowired
+	private LoginAttemptService loginAttemptService;
+
+	@Autowired
+	private HttpServletRequest request;
 
 	private UserRepository applicationUserRepository;
 	private RoleService roleService;
@@ -33,6 +42,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+		final String ip = getClientIP();
+		if (loginAttemptService.isBlocked(ip)) {
+			throw new RuntimeException("blocked");
+		}
+
 		AppUser applicationUser = applicationUserRepository.findByUsername(username);
 		if (applicationUser == null) {
 			throw new UsernameNotFoundException(username);
@@ -64,6 +79,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		return new User(applicationUser.getUsername(), applicationUser.getPassword(), true, true, true, true,
 				authorityList);
 
+	}
+
+	private final String getClientIP() {
+		final String xfHeader = request.getHeader("X-Forwarded-For");
+		if (xfHeader == null) {
+			return request.getRemoteAddr();
+		}
+		return xfHeader.split(",")[0];
 	}
 
 }

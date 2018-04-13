@@ -23,7 +23,10 @@ import com.springrestsecurityboilerplate.registration.ResendToken;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.registration.VerificationTokenRepository;
 import com.springrestsecurityboilerplate.role.RoleRepository;
+import com.springrestsecurityboilerplate.validation.AccountNotFoundException;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
+import com.springrestsecurityboilerplate.validation.ExpiredTokenException;
+import com.springrestsecurityboilerplate.validation.InvalidTokenException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 @Service
@@ -124,19 +127,21 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void verifyToken(String token) {
+	public void verifyToken(String token) throws InvalidTokenException, ExpiredTokenException {
 
 		VerificationToken verificationToken = getVerificationToken(token);
 
 		if (verificationToken == null) {
 
 			System.out.println("invalid token");
+			throw new InvalidTokenException("INVALID TOKEN");
 
 		} else {
 			AppUser user = verificationToken.getUser();
 			Calendar cal = Calendar.getInstance();
 			if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
 				System.out.println("Expired token!");
+				throw new ExpiredTokenException(verificationToken.getExpiryDate());
 			} else {
 
 				if (user.getIsActive() == true) {
@@ -159,7 +164,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void resendTokenByEmail(String email) {
+	public void resendTokenByEmail(String email) throws AccountNotFoundException {
 
 		AppUser user = userRepository.findByEmail(email);
 
@@ -168,7 +173,11 @@ public class UserServiceImp implements UserService {
 			createResendVerificationToken(user, token);
 
 		} else {
-			System.out.println("There is no account with that e-mail or User is already active");
+
+			// System.out.println("There is no account with that e-mail or User is already
+			// active");
+			throw new AccountNotFoundException(
+					"There is no account with that e-mail or User is already active: " + email);
 		}
 
 	}
@@ -187,7 +196,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void resetPasswordByEmail(String email) {
+	public void resetPasswordByEmail(String email) throws AccountNotFoundException {
 
 		AppUser user = userRepository.findByEmail(email);
 
@@ -196,7 +205,8 @@ public class UserServiceImp implements UserService {
 			createResetPasswordToken(user, token);
 
 		} else {
-			System.out.println("There is no account with that e-mail");
+			System.out.println();
+			throw new AccountNotFoundException("There is no account with that e-mail: " + email);
 		}
 
 	}
@@ -229,11 +239,14 @@ public class UserServiceImp implements UserService {
 		}
 	}
 
-	public void verifyResetPasswordToken(String token, PasswordChange pswChange) {
+	@Override
+	public void verifyResetPasswordToken(String token, PasswordChange pswChange)
+			throws InvalidTokenException, ExpiredTokenException {
 
 		PasswordResetToken pswToken = passwordResetTokenRepository.findByPasswordResetToken(token);
 		if (token == null || pswToken == null) {
 			System.out.println("invalid reset token");
+			throw new InvalidTokenException("INVALID RESET TOKEN");
 		}
 
 		else {
@@ -243,6 +256,7 @@ public class UserServiceImp implements UserService {
 
 			if ((pswToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
 				System.out.println("Expired token!");
+				throw new ExpiredTokenException(pswToken.getExpiryDate());
 			}
 
 			else {
