@@ -1,6 +1,8 @@
 package com.springrestsecurityboilerplate.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import com.springrestsecurityboilerplate.password.PasswordChange;
+import com.springrestsecurityboilerplate.validation.AccountNotFoundException;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
+import com.springrestsecurityboilerplate.validation.ExpiredTokenException;
+import com.springrestsecurityboilerplate.validation.InvalidTokenException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 @RestController
@@ -25,52 +30,88 @@ public class UserController {
 	UserRepository userRepository;
 
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
-	public void saveUser(@RequestBody AppUser user, WebRequest request) {
+	public ResponseEntity<Object> saveUser(@RequestBody AppUser user, WebRequest request) {
 
 		try {
 
 			userService.registerUser(user, request);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+
 		} catch (EmailExistsException e) {
+
 			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 			// System.out.println(e);
 		}
 
 		catch (UsernameExistsException e) {
 			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+
 		}
 
 	}
 
 	@RequestMapping(value = "/confirm/{token}", method = RequestMethod.GET)
-	public void confirmRegistration(@PathVariable("token") String token) {
+	public ResponseEntity<Object> confirmRegistration(@PathVariable("token") String token) {
 
-		userService.verifyToken(token);
+		try {
+			userService.verifyToken(token);
+			return new ResponseEntity<>(HttpStatus.OK);
+
+		} catch (InvalidTokenException e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		} catch (ExpiredTokenException e) {
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		}
 
 	}
 
 	@RequestMapping(value = "/resend/{email:.+}", method = RequestMethod.GET)
-	public void resendVerificationCode(@PathVariable("email") String email) {
+	public ResponseEntity<Object> resendVerificationCode(@PathVariable("email") String email) {
 
-		userService.resendTokenByEmail(email);
+		try {
+			userService.resendTokenByEmail(email);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		}
 	}
-	
-	
+
 	@RequestMapping(value = "/resetpassword/{email:.+}", method = RequestMethod.GET)
-	public void resetPassword(@PathVariable("email") String email) {
+	public ResponseEntity<Object> resetPassword(@PathVariable("email") String email) {
 
-		userService.resetPasswordByEmail(email);
+		try {
+			userService.resetPasswordByEmail(email);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		}
 	}
-	
-	
+
 	@RequestMapping(value = "/resetpasswordform/{token}", method = RequestMethod.POST)
-	public void resetPasswordForm(@RequestBody PasswordChange pswChange, @PathVariable("token") String token) {
-		
+	public ResponseEntity<Object> resetPasswordForm(@RequestBody PasswordChange pswChange,
+			@PathVariable("token") String token) {
+
 		System.out.println(pswChange.getPasswordOne());
-		
-		userService.verifyResetPasswordToken(token,pswChange);
+
+		try {
+			userService.verifyResetPasswordToken(token, pswChange);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (InvalidTokenException e) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+			// e.printStackTrace();
+		} catch (ExpiredTokenException e) {
+			e.getMessage();
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+
+		}
 	}
-	
-	
+
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	@PreAuthorize("hasAuthority('READ_PRIVILEGE')")
 	public void testFunction() {

@@ -4,7 +4,10 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.springrestsecurityboilerplate.password.PasswordChange;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
+import com.springrestsecurityboilerplate.validation.AccountNotFoundException;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
+import com.springrestsecurityboilerplate.validation.ExpiredTokenException;
+import com.springrestsecurityboilerplate.validation.InvalidTokenException;
 import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 
 public interface UserService {
@@ -19,9 +22,9 @@ public interface UserService {
 
 	VerificationToken getVerificationToken(String VerificationToken);
 
-	void verifyToken(String token);
+	void verifyToken(String token) throws InvalidTokenException, ExpiredTokenException;
 
-	void resendTokenByEmail(String email);
+	void resendTokenByEmail(String email) throws AccountNotFoundException;
 
 	void createResendVerificationToken(AppUser user, String token);
 
@@ -29,9 +32,9 @@ public interface UserService {
 
 	public boolean doesUsernameExist(String username);
 
-	void resetPasswordByEmail(String email);
+	void resetPasswordByEmail(String email) throws AccountNotFoundException;
 
 	void createResetPasswordToken(AppUser user, String token);
 
-	void verifyResetPasswordToken(String token, PasswordChange pswChange);
+	void verifyResetPasswordToken(String token, PasswordChange pswChange) throws InvalidTokenException, ExpiredTokenException;
 }

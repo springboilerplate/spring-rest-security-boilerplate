@@ -112,9 +112,77 @@ public class Tests {
 		final String personDTOJson = jsonTester.write(user).getJson();
 
 		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
-				.andExpect(status().isOk()).
+				.andExpect(status().isCreated()).
 				// andExpect(jsonPath("$.username",is("Destan"))).
 				andDo(MockMvcResultHandlers.print());
+
+	}
+
+	@When("^attempt to register with registered email but different username \"([^\"]*)\" AND \"(.*?)\" AND \"(.*?)\"$")
+	public void userRegisterWithRegisteredEmail(String username, String password, String email) throws Throwable {
+		user = new AppUser();
+		user.setUsername(username);
+		user.setPassword(password);
+		user.setEmail(email);
+
+	}
+
+	@And("^make sure that there is already an account with that email \"(.*?)\"$")
+	public void checkingForRegisteredEmail(String email) throws Throwable {
+
+		tempUser = new AppUser();
+		tempUser = userRepository.findByEmail(email);
+		Assert.notNull(tempUser, "Should not be Null");
+
+	}
+
+	@Then("^make sure register is failure with HTTP Response Conflict and there is no user with different username \"(.*?)\"$")
+	public void performRegisterWithRegisteredEmail(String username) throws Throwable {
+
+		final String personDTOJson = jsonTester.write(user).getJson();
+
+		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
+				.andExpect(status().isConflict()).
+				// andExpect(jsonPath("$.username",is("Destan"))).
+				andDo(MockMvcResultHandlers.print());
+
+		tempUser = new AppUser();
+		tempUser = userRepository.findByUsername(username);
+		Assert.isNull(tempUser, "Should be Null");
+
+	}
+
+	@When("^attempt to register with registered username \"([^\"]*)\" AND \"(.*?)\" AND \"(.*?)\"$")
+	public void userRegisterWithRegisteredUsername(String username, String password, String email) throws Throwable {
+		user = new AppUser();
+		user.setUsername(username);
+		user.setPassword(password);
+		user.setEmail(email);
+
+	}
+
+	@And("^make sure that there is already an account with that username \"(.*?)\"$")
+	public void checkingForRegisteredUsername(String username) throws Throwable {
+
+		tempUser = new AppUser();
+		tempUser = userRepository.findByUsername(username);
+		Assert.notNull(tempUser, "Should not be Null");
+
+	}
+
+	@Then("^make sure register is failure with HTTP Response Conflict and there is no user with different email \"(.*?)\"$")
+	public void performRegisterWithRegisteredUsername(String email) throws Throwable {
+
+		final String personDTOJson = jsonTester.write(user).getJson();
+
+		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
+				.andExpect(status().isConflict()).
+				// andExpect(jsonPath("$.username",is("Destan"))).
+				andDo(MockMvcResultHandlers.print());
+
+		tempUser = new AppUser();
+		tempUser = userRepository.findByEmail(email);
+		Assert.isNull(tempUser, "Should be Null");
 
 	}
 
@@ -124,7 +192,7 @@ public class Tests {
 
 		tempUser = new AppUser();
 
-		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().isOk()).andReturn();
+		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().is4xxClientError()).andReturn();
 
 		tempUser = userRepository.findByEmail(email);
 
@@ -184,7 +252,7 @@ public class Tests {
 
 		tempUser = new AppUser();
 
-		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().isOk()).andReturn();
+		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().is4xxClientError()).andReturn();
 
 		tempUser = userRepository.findByEmail(email);
 
