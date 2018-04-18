@@ -10,14 +10,18 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 public class Privilege implements Serializable {
 
+//	@Id
+//	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@GeneratedValue(generator = "hibernate-uuid")
+	@GenericGenerator(name = "hibernate-uuid", strategy = "uuid2")
+	private String id;
 
 	private String name;
 
@@ -33,11 +37,11 @@ public class Privilege implements Serializable {
 		this.name = name;
 	}
 	
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	

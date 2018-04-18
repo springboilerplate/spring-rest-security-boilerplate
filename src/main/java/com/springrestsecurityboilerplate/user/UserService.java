@@ -1,5 +1,7 @@
 package com.springrestsecurityboilerplate.user;
 
+import java.util.Date;
+
 import org.springframework.web.context.request.WebRequest;
 
 import com.springrestsecurityboilerplate.password.PasswordChange;
@@ -34,7 +36,9 @@ public interface UserService {
 
 	void resetPasswordByEmail(String email) throws AccountNotFoundException;
 
-	void createResetPasswordToken(AppUser user, String token);
+	void createResetPasswordToken(AppUser user, String token, Date resetPasswordTokenExpiryDate);
 
 	void verifyResetPasswordToken(String token, PasswordChange pswChange) throws InvalidTokenException, ExpiredTokenException;
+
+	
 }

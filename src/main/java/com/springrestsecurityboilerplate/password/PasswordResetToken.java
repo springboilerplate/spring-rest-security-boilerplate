@@ -12,16 +12,21 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import com.springrestsecurityboilerplate.user.AppUser;
 
 @Entity
 public class PasswordResetToken implements Serializable {
 
-	private static final int EXPIRATION = 60 * 24;
+//	private static final int EXPIRATION = 60 * 24;
 
+//	@Id
+//	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@GeneratedValue(generator = "hibernate-uuid")
+	@GenericGenerator(name = "hibernate-uuid", strategy = "uuid2")
+	private String id;
 
 	private String passwordResetToken;
 	@OneToOne(fetch = FetchType.EAGER)
@@ -33,23 +38,23 @@ public class PasswordResetToken implements Serializable {
 		super();
 	}
 
-	public PasswordResetToken(final String token) {
+	public PasswordResetToken(final String token, Date expiryDate) {
 		super();
 
 		this.passwordResetToken = token;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 
-	public PasswordResetToken(final String token, final AppUser user) {
+	public PasswordResetToken(final String token, final AppUser user, Date expiryDate) {
 		super();
 
 		this.passwordResetToken = token;
 		this.user = user;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 
 	//
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -77,15 +82,8 @@ public class PasswordResetToken implements Serializable {
 		this.expiryDate = expiryDate;
 	}
 
-	private Date calculateExpiryDate(final int expiryTimeInMinutes) {
-		final Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(new Date().getTime());
-		cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-		return new Date(cal.getTime().getTime());
-	}
-
-	public void updateToken(final String token) {
+	public void updateToken(final String token, Date expiryDate) {
 		this.passwordResetToken = token;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,6 +19,7 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.persistence.JoinColumn;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.validator.constraints.Email;
@@ -34,8 +36,11 @@ import com.springrestsecurityboilerplate.validation.ValidEmail;
 public class AppUser implements Serializable {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@GeneratedValue(generator = "hibernate-uuid")
+	@GenericGenerator(name = "hibernate-uuid", strategy = "uuid2")
+	// @GeneratedValue(strategy = GenerationType.AUTO)
+	// @Column(columnDefinition = "CHAR(64)")
+	private String id;
 	private String name;
 	private String surname;
 	private String phone;
@@ -59,7 +64,7 @@ public class AppUser implements Serializable {
 	private VerificationToken token;
 
 	@OneToOne(targetEntity = PasswordResetToken.class, fetch = FetchType.EAGER)
-//	@JoinColumn(nullable = false, name = "appusder_id")
+	// @JoinColumn(nullable = false, name = "appusder_id")
 	private PasswordResetToken passwordResetToken;
 
 	// @OneToOne(fetch = FetchType.EAGER)
@@ -94,11 +99,11 @@ public class AppUser implements Serializable {
 		this.token = token;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

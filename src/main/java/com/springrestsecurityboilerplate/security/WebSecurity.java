@@ -1,7 +1,7 @@
 package com.springrestsecurityboilerplate.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.boot.autoconfigure.security.SecurityProperties.Headers;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,22 +44,32 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 		http.cors().and().csrf().disable().authorizeRequests()
 				.antMatchers("/register", "/confirm/*", "/resend/*", "/currentuser2","/resetpassword/*","/resetpasswordform/*").permitAll()
 				// .antMatchers("/test").hasRole("USER_ROLE")
-				.anyRequest().authenticated().and().addFilter(new JWTAuthenticationFilter(authenticationManager()))
+				.anyRequest().authenticated()
+				.and()
+				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
 				.addFilter(new JWTAuthorizationFilter(authenticationManager(), userRepository, roleService))
 				// this disables session creation on Spring Security
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-					and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				.and()
 				//headers
-				.headers().defaultsDisabled().
-				cacheControl().
-				and().
-				contentTypeOptions().
-				and().
-				contentSecurityPolicy("default-src 'none'").
-				and().
-				xssProtection().block(true).
-				and().
-				frameOptions().deny();
+				.headers()
+				.defaultsDisabled()
+				.cacheControl()
+				.and()
+				.contentTypeOptions()
+				.and()
+				.contentSecurityPolicy("default-src 'none'")
+				.and()
+				.xssProtection().block(true)
+				.and()
+				.httpStrictTransportSecurity()
+				.and()
+				.frameOptions().deny();
+		
+		
+//				.httpStrictTransportSecurity().disable()
+//				.and()
+//				.headers().frameOptions().deny();
 	}
 
 	@Override
