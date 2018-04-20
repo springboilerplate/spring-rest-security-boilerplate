@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,8 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	PasswordResetTokenService passwordResetTokenService;
 
+	private static Logger logger = LogManager.getLogger();
+
 	// @Autowired
 	// Rolev2Repository roleRepository;
 
@@ -69,8 +73,10 @@ public class UserServiceImp implements UserService {
 	public void registerUser(AppUser user, WebRequest request) throws EmailExistsException, UsernameExistsException {
 
 		if (doesEmailExist(user.getEmail())) {
-			// System.out.println("Existed email");
-			throw new EmailExistsException(user.getEmail());
+			EmailExistsException ex = new EmailExistsException(user.getEmail());
+			logger.error(ex);
+			throw ex;
+
 		} else if (doesUsernameExist(user.getUsername())) {
 			throw new UsernameExistsException(user.getUsername());
 		}
