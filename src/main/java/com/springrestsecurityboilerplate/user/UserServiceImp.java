@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,10 +19,12 @@ import com.springrestsecurityboilerplate.mail.Mailer;
 import com.springrestsecurityboilerplate.password.PasswordChange;
 import com.springrestsecurityboilerplate.password.PasswordResetToken;
 import com.springrestsecurityboilerplate.password.PasswordResetTokenRepository;
+import com.springrestsecurityboilerplate.password.PasswordResetTokenService;
 import com.springrestsecurityboilerplate.registration.OnRegistrationCompleteEvent;
 import com.springrestsecurityboilerplate.registration.ResendToken;
 import com.springrestsecurityboilerplate.registration.VerificationToken;
 import com.springrestsecurityboilerplate.registration.VerificationTokenRepository;
+import com.springrestsecurityboilerplate.registration.VerificationTokenService;
 import com.springrestsecurityboilerplate.role.RoleRepository;
 import com.springrestsecurityboilerplate.validation.AccountNotFoundException;
 import com.springrestsecurityboilerplate.validation.EmailExistsException;
@@ -32,14 +35,14 @@ import com.springrestsecurityboilerplate.validation.UsernameExistsException;
 @Service
 public class UserServiceImp implements UserService {
 
+	@Value("${custom.token.expired.time}")
+	private int EXPIRATION;
+
 	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
 	ApplicationEventPublisher eventPublisher;
-
-	@Autowired
-	VerificationTokenRepository tokenRepository;
 
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -48,7 +51,10 @@ public class UserServiceImp implements UserService {
 	RoleRepository roleRepository;
 
 	@Autowired
-	PasswordResetTokenRepository passwordResetTokenRepository;
+	VerificationTokenService verificationTokenService;
+
+	@Autowired
+	PasswordResetTokenService passwordResetTokenService;
 
 	// @Autowired
 	// Rolev2Repository roleRepository;
@@ -104,20 +110,22 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public AppUser getUser(String verificationToken) {
-		AppUser user = tokenRepository.findByToken(verificationToken).getUser();
+		AppUser user = verificationTokenService.findVerificationTokenByToken(verificationToken).getUser();
 		return user;
 	}
 
 	@Override
 	public VerificationToken getVerificationToken(String VerificationToken) {
-		return tokenRepository.findByToken(VerificationToken);
+		return verificationTokenService.findVerificationTokenByToken(VerificationToken);
 	}
 
 	@Override
 	public void createVerificationToken(AppUser user, String token) {
-		VerificationToken myToken = new VerificationToken(user, token);
+
+		Date verificationTokenExpiryDate = verificationTokenService.calculateExpiryDate(EXPIRATION);
+		VerificationToken myToken = new VerificationToken(user, token, verificationTokenExpiryDate);
 		user.setToken(myToken);
-		tokenRepository.save(myToken);
+		verificationTokenService.saveVerificationToken(myToken);
 	}
 
 	@Override
@@ -154,7 +162,7 @@ public class UserServiceImp implements UserService {
 					user.setIsActive(true);
 					user.setToken(null);
 					updateUser(user);
-					tokenRepository.delete(verificationToken);
+					verificationTokenService.deleteVerificationToken(verificationToken);
 
 				}
 			}
@@ -185,9 +193,10 @@ public class UserServiceImp implements UserService {
 	@Override
 	public void createResendVerificationToken(AppUser user, String token) {
 
+		Date verificationTokenExpiryDate = verificationTokenService.calculateExpiryDate(EXPIRATION);
 		VerificationToken oldToken = user.getToken();
-		oldToken.updateToken(token);
-		tokenRepository.save(oldToken);
+		oldToken.updateToken(token, verificationTokenExpiryDate);
+		verificationTokenService.saveVerificationToken(oldToken);
 		ResendToken resendToken = new ResendToken(user, oldToken);
 		// amqpTemplate.convertAndSend("email-exchange", "resend-token",
 		// resendToken);
@@ -201,8 +210,9 @@ public class UserServiceImp implements UserService {
 		AppUser user = userRepository.findByEmail(email);
 
 		if (user != null) {
+			Date resetPasswordTokenExpiryDate = passwordResetTokenService.calculateExpiryDate(EXPIRATION);
 			String token = UUID.randomUUID().toString();
-			createResetPasswordToken(user, token);
+			createResetPasswordToken(user, token, resetPasswordTokenExpiryDate);
 
 		} else {
 			System.out.println();
@@ -212,15 +222,15 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public void createResetPasswordToken(AppUser user, String token) {
+	public void createResetPasswordToken(AppUser user, String token, Date resetPasswordTokenExpiryDate) {
 
 		PasswordResetToken whetherResetToken = user.getPasswordResetToken();
 
 		if (whetherResetToken == null) {
 
-			PasswordResetToken passwordResetToken = new PasswordResetToken(token, user);
+			PasswordResetToken passwordResetToken = new PasswordResetToken(token, user, resetPasswordTokenExpiryDate);
 			user.setPasswordResetToken(passwordResetToken);
-			passwordResetTokenRepository.save(passwordResetToken);
+			passwordResetTokenService.savePasswordResetToken(passwordResetToken);
 			System.out.println("Reset password token is " + token);
 			// userRepository.save(user);
 
@@ -231,9 +241,9 @@ public class UserServiceImp implements UserService {
 		}
 
 		else {
-			whetherResetToken.updateToken(token);
+			whetherResetToken.updateToken(token, resetPasswordTokenExpiryDate);
 			// user.setPasswordResetToken(whetherResetToken);
-			passwordResetTokenRepository.save(whetherResetToken);
+			passwordResetTokenService.savePasswordResetToken(whetherResetToken);
 			System.out.println("Reset password token is " + token);
 			template.convertAndSend("email-direct", "reset-password", whetherResetToken);
 		}
@@ -243,7 +253,7 @@ public class UserServiceImp implements UserService {
 	public void verifyResetPasswordToken(String token, PasswordChange pswChange)
 			throws InvalidTokenException, ExpiredTokenException {
 
-		PasswordResetToken pswToken = passwordResetTokenRepository.findByPasswordResetToken(token);
+		PasswordResetToken pswToken = passwordResetTokenService.findPasswordResetTokenByToken(token);
 		if (token == null || pswToken == null) {
 			System.out.println("invalid reset token");
 			throw new InvalidTokenException("INVALID RESET TOKEN");
@@ -266,7 +276,7 @@ public class UserServiceImp implements UserService {
 					// user.setPassword(pswChange.getPasswordOne());
 					user.setPassword(bCryptPasswordEncoder.encode(pswChange.getPasswordOne()));
 					user.setPasswordResetToken(null);
-					passwordResetTokenRepository.delete(pswToken);
+					passwordResetTokenService.deleteResetPasswordToken(pswToken);
 					userRepository.save(user);
 
 				} else

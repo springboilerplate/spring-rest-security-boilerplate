@@ -15,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import com.springrestsecurityboilerplate.user.AppUser;
 
 @Entity
@@ -23,8 +25,9 @@ public class VerificationToken implements Serializable {
 	private static final int EXPIRATION = 60 * 24;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@GeneratedValue(generator = "hibernate-uuid")
+	@GenericGenerator(name = "hibernate-uuid", strategy = "uuid2")
+	private String id;
 
 	private String token;
 
@@ -34,41 +37,34 @@ public class VerificationToken implements Serializable {
 
 	private Date expiryDate;
 
-	private Date calculateExpiryDate(int expiryTimeInMinutes) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Timestamp(cal.getTime().getTime()));
-		cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-		return new Date(cal.getTime().getTime());
-	}
-
-	public void updateToken(String token) {
+	public void updateToken(String token, Date expiryDate) {
 		this.token = token;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 
 	public VerificationToken() {
 		super();
 	}
 
-	public VerificationToken(final String token) {
+	public VerificationToken(final String token, Date expiryDate) {
 		super();
 
 		this.token = token;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 
-	public VerificationToken(final AppUser user, final String token) {
+	public VerificationToken(final AppUser user, final String token, Date expiryDate) {
 		super();
 		this.user = user;
 		this.token = token;
-		this.expiryDate = calculateExpiryDate(EXPIRATION);
+		this.expiryDate = expiryDate;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

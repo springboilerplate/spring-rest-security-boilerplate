@@ -61,11 +61,15 @@ public class Tests {
 
 	private static JacksonTester<PasswordChange> jsonTesterPswChange;
 
-	AppUser user = new AppUser();
+	AppUser registerUser;
 
 	AppUser loginUser = new AppUser();
 
 	AppUser tempUser;
+
+	AppUser resendTokenUser;
+	
+	AppUser resetPasswordUser;
 
 	static String bearerToken;
 
@@ -99,31 +103,29 @@ public class Tests {
 
 	@When("^username password and email are \"([^\"]*)\" AND \"(.*?)\" AND \"(.*?)\"$")
 	public void userRegister(String username, String password, String email) throws Throwable {
-
-		user.setUsername(username);
-		user.setPassword(password);
-		user.setEmail(email);
+		registerUser = new AppUser();
+		registerUser.setUsername(username);
+		registerUser.setPassword(password);
+		registerUser.setEmail(email);
 
 	}
 
 	@Then("^visitor calls /register$")
 	public void performRegister() throws Throwable {
 
-		final String personDTOJson = jsonTester.write(user).getJson();
+		final String personDTOJson = jsonTester.write(registerUser).getJson();
 
 		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
-				.andExpect(status().isCreated()).
-				// andExpect(jsonPath("$.username",is("Destan"))).
-				andDo(MockMvcResultHandlers.print());
+				.andExpect(status().isCreated()).andDo(MockMvcResultHandlers.print());
 
 	}
 
 	@When("^attempt to register with registered email but different username \"([^\"]*)\" AND \"(.*?)\" AND \"(.*?)\"$")
 	public void userRegisterWithRegisteredEmail(String username, String password, String email) throws Throwable {
-		user = new AppUser();
-		user.setUsername(username);
-		user.setPassword(password);
-		user.setEmail(email);
+		registerUser = new AppUser();
+		registerUser.setUsername(username);
+		registerUser.setPassword(password);
+		registerUser.setEmail(email);
 
 	}
 
@@ -139,12 +141,10 @@ public class Tests {
 	@Then("^make sure register is failure with HTTP Response Conflict and there is no user with different username \"(.*?)\"$")
 	public void performRegisterWithRegisteredEmail(String username) throws Throwable {
 
-		final String personDTOJson = jsonTester.write(user).getJson();
+		final String personDTOJson = jsonTester.write(registerUser).getJson();
 
 		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
-				.andExpect(status().isConflict()).
-				// andExpect(jsonPath("$.username",is("Destan"))).
-				andDo(MockMvcResultHandlers.print());
+				.andExpect(status().isConflict()).andDo(MockMvcResultHandlers.print());
 
 		tempUser = new AppUser();
 		tempUser = userRepository.findByUsername(username);
@@ -154,10 +154,10 @@ public class Tests {
 
 	@When("^attempt to register with registered username \"([^\"]*)\" AND \"(.*?)\" AND \"(.*?)\"$")
 	public void userRegisterWithRegisteredUsername(String username, String password, String email) throws Throwable {
-		user = new AppUser();
-		user.setUsername(username);
-		user.setPassword(password);
-		user.setEmail(email);
+		registerUser = new AppUser();
+		registerUser.setUsername(username);
+		registerUser.setPassword(password);
+		registerUser.setEmail(email);
 
 	}
 
@@ -173,12 +173,10 @@ public class Tests {
 	@Then("^make sure register is failure with HTTP Response Conflict and there is no user with different email \"(.*?)\"$")
 	public void performRegisterWithRegisteredUsername(String email) throws Throwable {
 
-		final String personDTOJson = jsonTester.write(user).getJson();
+		final String personDTOJson = jsonTester.write(registerUser).getJson();
 
 		mockMvc.perform(post("/register").content(personDTOJson).contentType(APPLICATION_JSON_UTF8))
-				.andExpect(status().isConflict()).
-				// andExpect(jsonPath("$.username",is("Destan"))).
-				andDo(MockMvcResultHandlers.print());
+				.andExpect(status().isConflict()).andDo(MockMvcResultHandlers.print());
 
 		tempUser = new AppUser();
 		tempUser = userRepository.findByEmail(email);
@@ -190,11 +188,11 @@ public class Tests {
 	public void resendUnregisteredUserToken(String email) throws Throwable {
 		MvcResult mvcResult;
 
-		tempUser = new AppUser();
+		resendTokenUser = new AppUser();
 
 		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().is4xxClientError()).andReturn();
 
-		tempUser = userRepository.findByEmail(email);
+		resendTokenUser = userRepository.findByEmail(email);
 
 		// Assert.isNull(tempUser, "Should be Null");
 
@@ -203,7 +201,7 @@ public class Tests {
 	@Then("^Make sure that user is null$")
 	public void userIsNull() throws Throwable {
 
-		Assert.isNull(tempUser, "Should be Null");
+		Assert.isNull(resendTokenUser, "Should be Null");
 
 	}
 
@@ -211,11 +209,11 @@ public class Tests {
 	public void resendToken(String email) throws Throwable {
 		MvcResult mvcResult;
 
-		tempUser = new AppUser();
+		resendTokenUser = new AppUser();
 		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().isOk()).andReturn();
-		tempUser = userRepository.findByEmail(email);
+		resendTokenUser = userRepository.findByEmail(email);
 
-		lastToken = tempUser.getToken().getToken();
+		lastToken = resendTokenUser.getToken().getToken();
 		System.out.println("NEW TOKEN IS " + lastToken);
 
 	}
@@ -223,13 +221,13 @@ public class Tests {
 	@And("^Make sure that user is not null$")
 	public void userIsNotNull() throws Throwable {
 
-		Assert.notNull(tempUser, "Should not be Null");
+		Assert.notNull(resendTokenUser, "Should not be Null");
 	}
 
 	@Then("^Make sure that user is not active$")
 	public void userIsNotActive() throws Throwable {
 
-		assertEquals(tempUser.getIsActive(), false);
+		assertEquals(resendTokenUser.getIsActive(), false);
 	}
 
 	@When("^Confirm Token$")
@@ -241,20 +239,20 @@ public class Tests {
 
 	@Then("^Make sure that user is active \"([^\"]*)\"$")
 	public void userIsActive(String email) throws Throwable {
-
-		tempUser = userRepository.findByEmail(email);
-		assertEquals(tempUser.getIsActive(), true);
+		resendTokenUser = new AppUser();
+		resendTokenUser = userRepository.findByEmail(email);
+		assertEquals(resendTokenUser.getIsActive(), true);
 	}
 
 	@When("^Resend Token for already confirmed user \"([^\"]*)\"$")
 	public void resendForAlreadyConfirmed(String email) throws Throwable {
 		MvcResult mvcResult;
 
-		tempUser = new AppUser();
+		resendTokenUser = new AppUser();
 
 		mvcResult = mockMvc.perform(get("/resend/{email}", email)).andExpect(status().is4xxClientError()).andReturn();
 
-		tempUser = userRepository.findByEmail(email);
+		resendTokenUser = userRepository.findByEmail(email);
 
 		// Assert.notNull(tempUser, "should not be null");
 		// assertEquals(tempUser.getIsActive(), true);
@@ -266,10 +264,10 @@ public class Tests {
 
 		MvcResult mvcResult;
 
-		tempUser = new AppUser();
+		resetPasswordUser = new AppUser();
 		mvcResult = mockMvc.perform(get("/resetpassword/{email}", email)).andExpect(status().isOk()).andReturn();
-		tempUser = userRepository.findByEmail(email);
-		resetPasswordToken = tempUser.getPasswordResetToken().getToken();
+		resetPasswordUser = userRepository.findByEmail(email);
+		resetPasswordToken = resetPasswordUser.getPasswordResetToken().getToken();
 		System.out.println("Test Reset PasswordToken = " + resetPasswordToken);
 	}
 
