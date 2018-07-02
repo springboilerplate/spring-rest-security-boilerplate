@@ -1,0 +1,12 @@
+version: '3'
+services:
+  rabbitmq-server:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "5671:5671"
+    environment: 
+      RABBITMQ_DEFAULT_PASS: pass
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_VHOST: vhost
